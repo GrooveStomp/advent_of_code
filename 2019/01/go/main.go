@@ -1,22 +1,29 @@
+/******************************************************************************
+  GrooveStomp's Advent of Code
+  Copyright (c) 2019 Aaron Oman (GrooveStomp)
+
+  File: main.go
+  Created: 2019-12-03
+  Updated: 2019-12-04
+  Author: Aaron Oman (GrooveStomp)
+
+  Notice: CC BY 4.0 License
+
+  This program comes with ABSOLUTELY NO WARRANTY.
+  This is free software, and you are welcome to redistribute it under certain
+  conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
+ ******************************************************************************/
 package main
 
 import (
-	"os"
 	"fmt"
-	"strconv"
 	"math"
+	"os"
+	"strconv"
 )
-
-func Usage() {
-	desc := `
-exe file
-`
-	fmt.Printf(desc)
-}
 
 func main() {
 	if len(os.Args) != 2 {
-		Usage()
 		os.Exit(1)
 	}
 
@@ -24,9 +31,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close();
+	defer f.Close()
 
-	var sum uint64 = 0;
+	var sum uint64 = 0
 
 	for {
 		var str string
@@ -40,11 +47,11 @@ func main() {
 			break
 		}
 
-		fuel := uint64(math.Floor(float64(mass) / 3.0)) - 2
+		fuel := uint64(math.Floor(float64(mass)/3.0)) - 2
 		sum += fuel
 	}
 
-	fmt.Printf("Total: %v\n", sum)
-	
+	fmt.Println(sum)
+
 	os.Exit(0)
 }

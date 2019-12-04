@@ -1,3 +1,18 @@
+//------------------------------------------------------------------------------
+// GrooveStomp's Advent of Code
+// Copyright (c) 2019 Aaron Oman (GrooveStomp)
+//
+// File: main.zig
+// Created: 2019-12-03
+// Updated: 2019-12-04
+// Author: Aaron Oman (GrooveStomp)
+//
+// Notice: CC BY 4.0 License
+//
+// This program comes with ABSOLUTELY NO WARRANTY.
+// This is free software, and you are welcome to redistribute it under certain
+// conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
+//------------------------------------------------------------------------------
 const std = @import("std");
 const alloc = std.heap.direct_allocator;
 const os = std.os;
@@ -40,5 +55,5 @@ pub fn main() !void {
         sum += @floatToInt(u64, std.math.floor(@intToFloat(f32, mass) / 3.0)) - 2;
     }
 
-    std.debug.warn("Total: {}\n", sum);
+    std.debug.warn("{}\n", sum);
 }

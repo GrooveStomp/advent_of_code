@@ -1,8 +1,22 @@
+/******************************************************************************
+  GrooveStomp's Advent of Code
+  Copyright (c) 2019 Aaron Oman (GrooveStomp)
+
+  File: main.odin
+  Created: 2019-12-03
+  Updated: 2019-12-04
+  Author: Aaron Oman (GrooveStomp)
+
+  Notice: CC BY 4.0 License
+
+  This program comes with ABSOLUTELY NO WARRANTY.
+  This is free software, and you are welcome to redistribute it under certain
+  conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
+ ******************************************************************************/
 package main
 
 import "core:fmt"
 import "core:os"
-import "core:mem"
 import "core:strings"
 import "core:strconv"
 import "core:math"
@@ -35,6 +49,7 @@ main :: proc() {
     f, err := os.open("../input.txt");
     if err != 0 {
         fmt.println("Couldn't open input");
+        os.exit(1);
     }
     defer os.close(f);
 
@@ -50,5 +65,5 @@ main :: proc() {
         sum += u64(math.floor_f32(mass / 3.0)) - 2;
     }
 
-    fmt.printf("Total: %v\n", sum);
+    fmt.println(sum);
 }

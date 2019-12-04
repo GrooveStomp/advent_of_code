@@ -15,3 +15,5 @@ The organization of this repo is by date, then by languages, for example:
                 ├── odin
                 ├── rust
                 └── zig
+
+Unless otherwise specified, all programs are written with no option switches and no usage text.  If input is required, it is expected to be in a file in the immediate parent directory named `input.txt`, and any output is written directly to stdout without any kind of formatting or context.

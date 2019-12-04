@@ -4,7 +4,7 @@
 
   File: main.c
   Created: 2019-12-03
-  Updated: 2019-12-03
+  Updated: 2019-12-04
   Author: Aaron Oman (GrooveStomp)
 
   Notice: CC BY 4.0 License
@@ -14,52 +14,14 @@
   conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
  ******************************************************************************/
 #include <stdio.h>
-#include <stdlib.h> // exit, atof
-#include <getopt.h>
+#include <stdlib.h> // exit, atol
 #include <math.h> // floor
 
-static FILE *input;
-
-void Usage() {
-        printf("Usage: exe file\n");
-}
-
-void Deinit(int exitCode) {
-        if (NULL != input) {
-                fclose(input);
-        }
-
-        exit(exitCode);
-}
-
 int main(int argc, char *argv[]) {
-        while (1) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wgnu-empty-initializer"
-                #pragma GCC diagnostic ignored "-Wzero-length-array"
-                static struct option longOptions[] = {
-                };
-                #pragma GCC diagnostic pop
-                int optionIndex = 0;
-
-                int c = getopt_long(argc, argv, "", longOptions, &optionIndex);
-                if (c == -1) break;
-
-                switch (c) {
-                        default:
-                                abort();
-                };
-        }
-
-        if ((argc - optind) != 1) {
-                Usage();
-                Deinit(1);
-        }
-
-        input = fopen(argv[1], "r");
+        FILE *input = fopen(argv[1], "r");
         if (NULL == input) {
                 fprintf(stderr, "Couldn't open file %s for reading", argv[1]);
-                Deinit(1);
+                return 1;
         }
 
         unsigned int sum = 0;
@@ -75,7 +37,8 @@ int main(int argc, char *argv[]) {
                 sum += (unsigned int)fuelRequired;
         }
 
-        printf("Total: %d\n", sum);
+        printf("%d\n", sum);
+        fclose(input);
 
-        Deinit(0);
+        return 0;
 }

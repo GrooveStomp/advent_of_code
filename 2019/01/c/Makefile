@@ -4,7 +4,7 @@
 #
 # File: Makefile
 # Created: 2019-12-03
-# Updated: 2019-12-03
+# Updated: 2019-12-04
 # Author: Aaron Oman (GrooveStomp)
 #
 # Notice: CC BY 4.0 License
@@ -23,8 +23,7 @@ SRC      = $(wildcard *.c)
 OBJFILES = $(patsubst %.c,%.o,$(SRC))
 
 DBGDIR = debug
-DBGOBJ = $(addprefix $(DBGDIR)/,$(OBJFILES))
-DBGEXE = $(DBGDIR)/exe
+DBGEXE = main
 DBGFLG = -g -Og
 
 DEFAULT_GOAL := $(debug)
@@ -32,7 +31,7 @@ DEFAULT_GOAL := $(debug)
 
 debug: $(DBGEXE)
 
-$(DBGEXE): $(DBGOBJ)
+$(DBGEXE): $(OBJFILES)
 	$(CC) -o $@ $^ $(LIBS)
 
 $(DBGDIR)/%.o: %.c $(HEADERS) $(SRC_DEP)
@@ -40,4 +39,4 @@ $(DBGDIR)/%.o: %.c $(HEADERS) $(SRC_DEP)
 	$(CC) -c $*.c $(INC) $(CFLAGS) $(DBGFLG) -o $@
 
 clean:
-	rm -rf core debug ${DBGOBJ}
+	rm -rf core ${OBJFILES} ${DBGEXE}
