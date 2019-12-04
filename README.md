@@ -13,4 +13,5 @@ The organization of this repo is by date, then by languages, for example:
                 ├── c
                 ├── go
                 ├── odin
+                ├── rust
                 └── zig

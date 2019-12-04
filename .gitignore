@@ -2,3 +2,5 @@ debug/
 exe
 main
 a.out
+*.o
+zig-cache
