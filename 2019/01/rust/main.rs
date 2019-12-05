@@ -24,10 +24,7 @@ fn read_string(mut fd: &File) -> Result<String, Error> {
 
     loop {
         let mut buf: [u8; 1] = [0; 1];
-        let n = match fd.read(&mut buf[..]) {
-            Ok(n) => n,
-            Err(e) => return Err(e),
-        };
+        let n = fd.read(&mut buf[..])?;
 
         if n == 0 {
             return Err(Error::new(ErrorKind::Other, "EOF"));
@@ -44,18 +41,15 @@ fn read_string(mut fd: &File) -> Result<String, Error> {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-
     if args.len() != 2 {
         eprintln!("Wrong number of arguments");
         exit(1);
     }
 
-    let filename = &args[1];
-
-    let fd = match File::open(filename) {
+    let fd = match File::open(&args[1]) {
         Ok(f) => f,
         Err(_) => {
-            eprintln!("Couldn't open {}", filename);
+            eprintln!("Couldn't open {}", &args[1]);
             exit(1);
         },
     };

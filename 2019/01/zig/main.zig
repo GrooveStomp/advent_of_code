@@ -42,19 +42,18 @@ fn read_string(fd: c_int) ![]u8 {
 }
 
 pub fn main() u8 {
-    var args: [][]u8 = undefined;
-    args = if (std.process.argsAlloc(alloc)) |ok| ok else |err| {
+    var args = std.process.argsAlloc(alloc) catch |err| {
         warn("Couldn't parse args\n");
         return 1;
     };
+    defer std.process.argsFree(alloc, args);
 
     if (args.len != 2) {
         warn("Wrong number of arguments\n");
         return 1;
     }
 
-    var fd: i32 = undefined;
-    fd = if (os.open(args[1], os.O_RDONLY, 0755)) |ok| ok else |err| {
+    var fd = os.open(args[1], os.O_RDONLY, 0755) catch |err| {
         warn("Couldn't open {}\n", args[1]);
         return 1;
     };
@@ -63,15 +62,8 @@ pub fn main() u8 {
     var sum: u64 = 0;
 
     while (true) {
-        var str: []u8 = undefined;
-        str = if (read_string(fd)) |ok| ok else |err| {
-            break;
-        };
-
-        var mass: u64 = undefined;
-        mass = if (std.fmt.parseInt(u64, str, 10)) |ok| ok else |err| {
-            break;
-        };
+        var str = read_string(fd) catch break;
+        var mass = std.fmt.parseInt(u64, str, 10) catch break;
 
         sum += @floatToInt(u64, std.math.floor(@intToFloat(f32, mass) / 3.0)) - 2;
     }
