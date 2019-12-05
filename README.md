@@ -8,13 +8,13 @@ This repo contains my solutions to various advent of code challenges.
 The organization of this repo is by date, then by languages, for example:
 
     └── advent_of_code
-        └── 2019
-            └── 01
-                ├── c
-                ├── go
-                ├── odin
-                ├── rust
-                └── zig
+         └── 2019
+             └── 01
+                 ├── c
+                 ├── go
+                 ├── odin
+                 ├── rust
+                 └── zig
 
 Unless otherwise specified, all programs are written with no option switches and
 no usage text.  If input is required, it is taken as a command line argument.
