@@ -16,6 +16,11 @@
 const std = @import("std");
 const alloc = std.heap.direct_allocator;
 const os = std.os;
+const warn = std.debug.warn;
+
+const EofError = error {
+    Eof,
+};
 
 fn read_string(fd: c_int) ![]u8 {
     var buf = try std.Buffer.init(alloc, [_]u8{});
@@ -25,7 +30,7 @@ fn read_string(fd: c_int) ![]u8 {
         var chr_buf: [1]u8 = undefined;
         var bytes_read = try os.read(fd, chr_buf[0..]);
         if (bytes_read == 0) { // eof
-            return "";
+            return EofError.Eof;
         }
 
         if ((chr_buf[0] == ' ') or (chr_buf[0] == '\n')) {
@@ -34,26 +39,43 @@ fn read_string(fd: c_int) ![]u8 {
 
         try buf.append(chr_buf);
     }
-
-    return buf.toOwnedSlice();
 }
 
-pub fn main() !void {
-    var fd = try os.open("../input.txt", os.O_RDONLY, 0755);
+pub fn main() u8 {
+    var args: [][]u8 = undefined;
+    args = if (std.process.argsAlloc(alloc)) |ok| ok else |err| {
+        warn("Couldn't parse args\n");
+        return 1;
+    };
+
+    if (args.len != 2) {
+        warn("Wrong number of arguments\n");
+        return 1;
+    }
+
+    var fd: i32 = undefined;
+    fd = if (os.open(args[1], os.O_RDONLY, 0755)) |ok| ok else |err| {
+        warn("Couldn't open {}\n", args[1]);
+        return 1;
+    };
     defer os.close(fd);
 
     var sum: u64 = 0;
 
     while (true) {
-        var str = try read_string(fd);
-        if (std.mem.compare(u8, str, "") == std.mem.Compare.Equal) {
+        var str: []u8 = undefined;
+        str = if (read_string(fd)) |ok| ok else |err| {
             break;
-        }
+        };
 
-        var mass = try std.fmt.parseInt(u64, str, 10);
+        var mass: u64 = undefined;
+        mass = if (std.fmt.parseInt(u64, str, 10)) |ok| ok else |err| {
+            break;
+        };
 
         sum += @floatToInt(u64, std.math.floor(@intToFloat(f32, mass) / 3.0)) - 2;
     }
 
-    std.debug.warn("{}\n", sum);
+    warn("{}\n", sum);
+    return 0;
 }
