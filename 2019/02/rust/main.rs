@@ -72,7 +72,8 @@ fn main() {
     program[2] = 2;
 
     let mut i = 0;
-    // Run the program.
+
+    // Execute the program.
     while i < program.len() {
         let op   = program[i];
         let arg1 = program[i+1];
@@ -84,7 +85,8 @@ fn main() {
             2 => { program[dest] = program[arg1] * program[arg2] },
             99 => break,
             _ => {
-                // Normally this is an error condition, but for this program we get the result here.
+                // Normally this is an error condition, but for this program we
+                // get the result here.
                 println!("{}", program[0]);
                 exit(1);
             },

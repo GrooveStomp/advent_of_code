@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
         }
 
-        // Create the program
+        // Build the program.
         while (1) {
                 int code = ReadInt(input);
                 if (-1 == code) break;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         program[1] = 12;
         program[2] = 2;
 
-        // Execute the program
+        // Execute the program.
         for (int i = 0; i < numCodes; i+=4) {
                 unsigned int opcode = program[i];
                 unsigned int op1 = program[i+1];
@@ -101,8 +101,8 @@ int main(int argc, char *argv[]) {
                         case 99:
                                 break;
                         default:
-                                // Something went wrong!
-                                // Buf for this problem, this is how we get to the answer.
+                                // Normally this is an error condition, but for this program we
+                                // get the result here.
                                 printf("%d\n", program[0]);
                                 exit(1);
                                 break;
