@@ -46,9 +46,14 @@ read_string :: proc(f: os.Handle) -> (string, bool) {
 }
 
 main :: proc() {
-    f, err := os.open("../input.txt");
+    if len(os.args) != 2 {
+        fmt.println("Wrong number of arguments");
+        os.exit(1);
+    }
+
+    f, err := os.open(os.args[1]);
     if err != 0 {
-        fmt.println("Couldn't open input");
+        fmt.printf("Couldn't open %v\n", os.args[1]);
         os.exit(1);
     }
     defer os.close(f);
@@ -66,4 +71,5 @@ main :: proc() {
     }
 
     fmt.println(sum);
+    os.exit(0);
 }
