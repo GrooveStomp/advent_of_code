@@ -20,3 +20,6 @@ Unless otherwise specified, all programs are written with no option switches and
 no usage text.  If input is required, it is taken as a command line argument.
 Typical input involves specifying a filename as a CLI parameter.  Any output is
 written directly to stdout without any kind of formatting or context.
+
+All implementations have a corresponding Makefile and are configured to build a
+default executable called `main` in the same directory as the Makefile.
