@@ -81,8 +81,8 @@ fn main() {
         let dest = program[i+3];
 
         match op {
-            1 => { program[dest] = program[arg1] + program[arg2] },
-            2 => { program[dest] = program[arg1] * program[arg2] },
+            1 => program[dest] = program[arg1] + program[arg2],
+            2 => program[dest] = program[arg1] * program[arg2],
             99 => break,
             _ => {
                 // Normally this is an error condition, but for this program we
@@ -96,6 +96,5 @@ fn main() {
     }
 
     println!("{}", program[0]);
-
     exit(0);
 }

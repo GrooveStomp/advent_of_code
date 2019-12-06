@@ -96,7 +96,7 @@ main :: proc() {
             // Normally this is an error condition, but for this program we
             // get the result here.
             fmt.printf("%v\n", program[0]);
-            break;
+            os.exit(1);
         }
     }
 
