@@ -4,7 +4,7 @@
 #
 # File: Makefile
 # Created: 2019-12-05
-# Updated: 2019-12-05
+# Updated: 2019-12-09
 # Author: Aaron Oman (GrooveStomp)
 #
 # Notice: CC BY 4.0 License
@@ -13,14 +13,15 @@
 # conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
 #******************************************************************************
 CC  = ${HOME}/code/odin/odin
-SRC = $(wildcard *.odin)
+SRC =
 EXE = main
 
 DEFAULT_GOAL := $(debug)
 .PHONY: clean
 
 debug:
-	$(CC) build $(SRC)
+	$(CC) build .
+	mv odin $(EXE)
 
 clean:
 	rm -rf main
