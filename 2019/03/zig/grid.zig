@@ -14,20 +14,20 @@
 // conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
 //------------------------------------------------------------------------------
 const std = @import("std");
-const lib_point = @import("point.zig");
-const lib_segment = @import("segment.zig");
+const p = @import("point.zig");
+const s = @import("segment.zig");
 const alloc = std.heap.direct_allocator;
 const os = std.os;
 
 pub const Grid = struct {
-    segments: std.ArrayList(lib_segment.Segment),
+    segments: std.ArrayList(s.Segment),
 };
 
 pub fn NewGrid(fd: c_int) !*Grid {
-    var cursor = lib_point.Point{ .x = 0, .y = 0};
+    var cursor = p.Point{ .x = 0, .y = 0};
     var grid = try alloc.create(Grid);
 
-    grid.segments = std.ArrayList(lib_segment.Segment).init(alloc);
+    grid.segments = std.ArrayList(s.Segment).init(alloc);
 
     var str = try std.Buffer.init(alloc, [_]u8{});
     defer str.deinit();
@@ -38,7 +38,7 @@ pub fn NewGrid(fd: c_int) !*Grid {
         var n = try os.read(fd, ch[0..]);
 
         if (err or n == 0 or ch[0] == '\n' or ch[0] == ',') {
-            var segment = try lib_segment.NewSegment(cursor, str.toSlice());
+            var segment = try s.NewSegment(cursor, str.toSlice());
             cursor = segment.points[1];
             try grid.segments.append(segment.*);
             try str.replaceContents("");

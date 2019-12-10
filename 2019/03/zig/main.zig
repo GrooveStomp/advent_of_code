@@ -54,17 +54,19 @@ fn findCollision(s1: s.Segment, s2: s.Segment) !p.Point {
     var min_y = math.min(vt.points[0].y, vt.points[1].y);
     var max_y = math.max(vt.points[0].y, vt.points[1].y);
 
-    if (vt.points[0].x < min_x or vt.points[0].x > max_x or
-            hz.points[0].y < min_y or hz.points[0].y > max_y) {
+    if (vt.points[0].x < min_x
+            or vt.points[0].x > max_x
+            or hz.points[0].y < min_y
+            or hz.points[0].y > max_y) {
         return CollisionError.SegmentsDoNotCollide;
     }
 
     var collision = p.Point{ .x = vt.points[0].x, .y = hz.points[0].y };
 
-    if (collision.equal(hz.points[0]) or
-            collision.equal(hz.points[1]) or
-            collision.equal(vt.points[0]) or
-            collision.equal(vt.points[1])) {
+    if (collision.equal(hz.points[0])
+            or collision.equal(hz.points[1])
+            or collision.equal(vt.points[0])
+            or collision.equal(vt.points[1])) {
         return CollisionError.SegmentsShareEndpoint;
     }
 
@@ -77,7 +79,6 @@ fn findAllCollisions(g1: g.Grid, g2: g.Grid) std.ArrayList(p.Point) {
     for (g1.segments.toSliceConst()) |s1| {
         for (g2.segments.toSliceConst()) |s2| {
             var collision = findCollision(s1, s2) catch continue;
-
             collisions.append(collision) catch break;
         }
     }
@@ -90,10 +91,7 @@ fn readGrids(fd: c_int) std.ArrayList(g.Grid) {
 
     while (true) {
         var grid = g.NewGrid(fd) catch break;
-        if (grid.segments.len == 0) {
-            break;
-        }
-
+        if (grid.segments.len == 0) break;
         grids.append(grid.*) catch break;
     }
 
@@ -101,7 +99,7 @@ fn readGrids(fd: c_int) std.ArrayList(g.Grid) {
 }
 
 pub fn main() u8 {
-    var args = std.process.argsAlloc(alloc) catch |_| {
+    var args = std.process.argsAlloc(alloc) catch {
         warn("Couldn't parse args\n");
         return 1;
     };
@@ -112,7 +110,7 @@ pub fn main() u8 {
         return 1;
     }
 
-    var fd = os.open(args[1], os.O_RDONLY, 0755) catch |_| {
+    var fd = os.open(args[1], os.O_RDONLY, 0755) catch {
         warn("Couldn't open {}\n", args[1]);
         return 1;
     };
