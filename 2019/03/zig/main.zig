@@ -4,7 +4,7 @@
 //
 // File: main.zig
 // Created: 2019-12-09
-// Updated: 2019-12-09
+// Updated: 2019-12-10
 // Author: Aaron Oman (GrooveStomp)
 //
 // Notice: CC BY 4.0 License
@@ -17,7 +17,6 @@ const std = @import("std");
 const alloc = std.heap.direct_allocator;
 const os = std.os;
 const warn = std.debug.warn;
-const sort = std.sort;
 const math = std.math;
 
 const Point = struct {
@@ -25,9 +24,13 @@ const Point = struct {
     y: isize,
 
     pub fn distance(p: Point) isize {
-        var x = math.absInt(p.x) catch 0;
-        var y = math.absInt(p.y) catch 0;
+        var x = math.absInt(p.x) catch unreachable;
+        var y = math.absInt(p.y) catch unreachable;
         return x + y;
+    }
+
+    pub fn equal(p1: Point, p2: Point) bool {
+        return (p1.x == p2.x and p1.y == p2.y);
     }
 };
 
@@ -47,9 +50,27 @@ const Segment = struct {
     }
 };
 
-pub fn NewSegment(start: Point, str: std.Buffer) !*Segment {
-    // TODO: Implement me
-    return error.Unexpected;
+pub fn NewSegment(p: Point, str: []u8) !*Segment {
+    if (std.mem.eql(u8, str, "")) {
+        return error.Unexpected;
+    }
+
+    var magnitude = @intCast(isize, try std.fmt.parseInt(usize, str[1..], 10));
+    var segment = try alloc.create(Segment);
+    segment.points[0] = p;
+
+    switch (str[0]) {
+        'U' => segment.points[1] = Point{ .x = p.x, .y = p.y + magnitude },
+        'D' => segment.points[1] = Point{ .x = p.x, .y = p.y - magnitude },
+        'L' => segment.points[1] = Point{ .x = p.x - magnitude, .y = p.y },
+        'R' => segment.points[1] = Point{ .x = p.x + magnitude, .y = p.y },
+        else => {
+            warn("Unknown direction\n");
+            return error.Unexpected;
+        }
+    }
+
+    return segment;
 }
 
 const Grid = struct {
@@ -68,23 +89,13 @@ pub fn NewGrid(fd: c_int) !*Grid {
     while (true) {
         var err = false;
         var ch: [1]u8 = undefined;
-        var n: usize = undefined;
-        if (os.read(fd, ch[0..])) |num| {
-            n = num;
-        } else |_| {
-            err = true;
-        }
+        var n = try os.read(fd, ch[0..]);
 
         if (err or n == 0 or ch[0] == '\n' or ch[0] == ',') {
-            var segment: *Segment = undefined;
-            if (NewSegment(cursor, str)) |seg| {
-                segment = seg;
-            } else |_| { break; }
-
-            cursor = segment.points[0];
-            grid.segments.append(segment.*) catch break;
-
-            str.replaceContents("") catch break;
+            var segment = try NewSegment(cursor, str.toSlice());
+            cursor = segment.points[1];
+            try grid.segments.append(segment.*);
+            try str.replaceContents("");
 
             if (ch[0] == ',') continue;
 
@@ -97,32 +108,20 @@ pub fn NewGrid(fd: c_int) !*Grid {
     return grid;
 }
 
-fn readInt(fd: c_int) !usize {
-    var buf = try std.Buffer.init(alloc, [_]u8{});
-    defer buf.deinit();
-
-    while (true) {
-        var chr: [1]u8 = undefined;
-        var bytes_read = try os.read(fd, chr[0..]);
-
-        if (bytes_read == 0) break; // eof
-
-        if (chr[0] == ',') break;
-
-        try buf.append(chr);
-    }
-
-    var result = try std.fmt.parseInt(usize, buf.toSlice(), 10);
-    return result;
-}
+const CollisionError = error {
+    BothSegmentsVertical,
+    BothSegmentsHorizontal,
+    SegmentsDoNotCollide,
+    SegmentsShareEndpoint,
+};
 
 fn findCollision(s1: Segment, s2: Segment) !Point {
     if (s1.isVertical() and s2.isVertical()) {
-        return error.Unexpected;
+        return CollisionError.BothSegmentsVertical;
     }
 
     if (s1.isHorizontal() and s2.isHorizontal()) {
-        return error.Unexpected;
+        return CollisionError.BothSegmentsHorizontal;
     }
 
     var hz: Segment = undefined;
@@ -141,16 +140,30 @@ fn findCollision(s1: Segment, s2: Segment) !Point {
     var min_y = math.min(vt.points[0].y, vt.points[1].y);
     var max_y = math.max(vt.points[0].y, vt.points[1].y);
 
-    // TODO: Finish me
-    return error.Unexpected;
+    if (vt.points[0].x < min_x or vt.points[0].x > max_x or
+            hz.points[0].y < min_y or hz.points[0].y > max_y) {
+        return CollisionError.SegmentsDoNotCollide;
+    }
+
+    var collision = Point{ .x = vt.points[0].x, .y = hz.points[0].y };
+
+    if (collision.equal(hz.points[0]) or
+            collision.equal(hz.points[1]) or
+            collision.equal(vt.points[0]) or
+            collision.equal(vt.points[1])) {
+        return CollisionError.SegmentsShareEndpoint;
+    }
+
+    return collision;
 }
 
 fn findAllCollisions(g1: Grid, g2: Grid) std.ArrayList(Point) {
     var collisions = std.ArrayList(Point).init(alloc);
 
-    for (g1.segments.toSlice()) |s1| {
-        for (g2.segments.toSlice()) |s2| {
+    for (g1.segments.toSliceConst()) |s1| {
+        for (g2.segments.toSliceConst()) |s2| {
             var collision = findCollision(s1, s2) catch continue;
+
             collisions.append(collision) catch break;
         }
     }
@@ -198,10 +211,9 @@ pub fn main() u8 {
     defer collisions.deinit();
 
     var slice = collisions.toSlice();
+    std.sort.insertionSort(Point, slice, sortPoints);
 
-    sort.sort(Point, slice, sortPoints);
-
-    warn("{}\n", slice[0]);
+    warn("{}\n", slice[0].distance());
 
     return 0;
 }
