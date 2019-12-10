@@ -13,7 +13,7 @@
 # conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
 #******************************************************************************
 CC  = $(shell which zig)
-SRC = $(wildcard *.zig)
+SRC = main.zig
 EXE = main
 
 DEFAULT_GOAL := $(debug)

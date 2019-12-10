@@ -14,99 +14,13 @@
 // conditions; See https://creativecommons.org/licenses/by/4.0/ for details.
 //------------------------------------------------------------------------------
 const std = @import("std");
+const p = @import("point.zig");
+const s = @import("segment.zig");
+const g = @import("grid.zig");
 const alloc = std.heap.direct_allocator;
 const os = std.os;
 const warn = std.debug.warn;
 const math = std.math;
-
-const Point = struct {
-    x: isize,
-    y: isize,
-
-    pub fn distance(p: Point) isize {
-        var x = math.absInt(p.x) catch unreachable;
-        var y = math.absInt(p.y) catch unreachable;
-        return x + y;
-    }
-
-    pub fn equal(p1: Point, p2: Point) bool {
-        return (p1.x == p2.x and p1.y == p2.y);
-    }
-};
-
-fn sortPoints(a: Point, b: Point) bool {
-    return a.distance() < b.distance();
-}
-
-const Segment = struct {
-    points: [2]Point,
-
-    pub fn isVertical(s: Segment) bool {
-        return s.points[0].x == s.points[1].x;
-    }
-
-    pub fn isHorizontal(s: Segment) bool {
-        return s.points[0].y == s.points[1].y;
-    }
-};
-
-pub fn NewSegment(p: Point, str: []u8) !*Segment {
-    if (std.mem.eql(u8, str, "")) {
-        return error.Unexpected;
-    }
-
-    var magnitude = @intCast(isize, try std.fmt.parseInt(usize, str[1..], 10));
-    var segment = try alloc.create(Segment);
-    segment.points[0] = p;
-
-    switch (str[0]) {
-        'U' => segment.points[1] = Point{ .x = p.x, .y = p.y + magnitude },
-        'D' => segment.points[1] = Point{ .x = p.x, .y = p.y - magnitude },
-        'L' => segment.points[1] = Point{ .x = p.x - magnitude, .y = p.y },
-        'R' => segment.points[1] = Point{ .x = p.x + magnitude, .y = p.y },
-        else => {
-            warn("Unknown direction\n");
-            return error.Unexpected;
-        }
-    }
-
-    return segment;
-}
-
-const Grid = struct {
-    segments: std.ArrayList(Segment),
-};
-
-pub fn NewGrid(fd: c_int) !*Grid {
-    var cursor = Point{ .x = 0, .y = 0};
-    var grid = try alloc.create(Grid);
-
-    grid.segments = std.ArrayList(Segment).init(alloc);
-
-    var str = try std.Buffer.init(alloc, [_]u8{});
-    defer str.deinit();
-
-    while (true) {
-        var err = false;
-        var ch: [1]u8 = undefined;
-        var n = try os.read(fd, ch[0..]);
-
-        if (err or n == 0 or ch[0] == '\n' or ch[0] == ',') {
-            var segment = try NewSegment(cursor, str.toSlice());
-            cursor = segment.points[1];
-            try grid.segments.append(segment.*);
-            try str.replaceContents("");
-
-            if (ch[0] == ',') continue;
-
-            break;
-        }
-
-        try str.append(ch);
-    }
-
-    return grid;
-}
 
 const CollisionError = error {
     BothSegmentsVertical,
@@ -115,7 +29,7 @@ const CollisionError = error {
     SegmentsShareEndpoint,
 };
 
-fn findCollision(s1: Segment, s2: Segment) !Point {
+fn findCollision(s1: s.Segment, s2: s.Segment) !p.Point {
     if (s1.isVertical() and s2.isVertical()) {
         return CollisionError.BothSegmentsVertical;
     }
@@ -124,8 +38,8 @@ fn findCollision(s1: Segment, s2: Segment) !Point {
         return CollisionError.BothSegmentsHorizontal;
     }
 
-    var hz: Segment = undefined;
-    var vt: Segment = undefined;
+    var hz: s.Segment = undefined;
+    var vt: s.Segment = undefined;
 
     if (s1.isVertical()) {
         vt = s1;
@@ -145,7 +59,7 @@ fn findCollision(s1: Segment, s2: Segment) !Point {
         return CollisionError.SegmentsDoNotCollide;
     }
 
-    var collision = Point{ .x = vt.points[0].x, .y = hz.points[0].y };
+    var collision = p.Point{ .x = vt.points[0].x, .y = hz.points[0].y };
 
     if (collision.equal(hz.points[0]) or
             collision.equal(hz.points[1]) or
@@ -157,8 +71,8 @@ fn findCollision(s1: Segment, s2: Segment) !Point {
     return collision;
 }
 
-fn findAllCollisions(g1: Grid, g2: Grid) std.ArrayList(Point) {
-    var collisions = std.ArrayList(Point).init(alloc);
+fn findAllCollisions(g1: g.Grid, g2: g.Grid) std.ArrayList(p.Point) {
+    var collisions = std.ArrayList(p.Point).init(alloc);
 
     for (g1.segments.toSliceConst()) |s1| {
         for (g2.segments.toSliceConst()) |s2| {
@@ -171,11 +85,11 @@ fn findAllCollisions(g1: Grid, g2: Grid) std.ArrayList(Point) {
     return collisions;
 }
 
-fn readGrids(fd: c_int) std.ArrayList(Grid) {
-    var grids = std.ArrayList(Grid).init(alloc);
+fn readGrids(fd: c_int) std.ArrayList(g.Grid) {
+    var grids = std.ArrayList(g.Grid).init(alloc);
 
     while (true) {
-        var grid = NewGrid(fd) catch break;
+        var grid = g.NewGrid(fd) catch break;
         if (grid.segments.len == 0) {
             break;
         }
@@ -211,7 +125,7 @@ pub fn main() u8 {
     defer collisions.deinit();
 
     var slice = collisions.toSlice();
-    std.sort.insertionSort(Point, slice, sortPoints);
+    std.sort.insertionSort(p.Point, slice, p.sortPoints);
 
     warn("{}\n", slice[0].distance());
 
