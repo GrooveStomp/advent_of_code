@@ -24,7 +24,6 @@ Segment :: struct {
 
 new_segment :: proc(p: Point, str: string) -> (^Segment, bool) {
     if str == "" {
-        fmt.eprintf("string is empty\n");
         return nil, false;
     }
 
@@ -34,7 +33,7 @@ new_segment :: proc(p: Point, str: string) -> (^Segment, bool) {
         return nil, false;
     }
 
-    segment := Segment{};
+    segment := new(Segment);
     segment.points[0] = p;
 
     switch str[0] {
@@ -51,13 +50,13 @@ new_segment :: proc(p: Point, str: string) -> (^Segment, bool) {
 		    return nil, false;
     }
 
-    return &segment, true;
+    return segment, true;
 }
 
-is_vertical :: proc(s: Segment) -> bool {
-    return s.points[0].x == s.points[1].x;
+is_vertical :: proc(using s: Segment) -> bool {
+    return points[0].x == points[1].x;
 }
 
-is_horizontal :: proc(s: Segment) -> bool {
-    return s.points[0].y == s.points[1].y;
+is_horizontal :: proc(using s: Segment) -> bool {
+    return points[0].y == points[1].y;
 }

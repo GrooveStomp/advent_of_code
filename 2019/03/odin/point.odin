@@ -20,6 +20,10 @@ Point :: struct {
     y: int,
 }
 
-manhattan_distance :: proc(p: Point) -> int {
-    return abs(p.x) + abs(p.y);
+manhattan_distance :: proc(using p: Point) -> int {
+    return abs(x) + abs(y);
+}
+
+equal_point :: proc(a, b: Point) -> bool {
+    return a.x == b.x && a.y == b.y;
 }

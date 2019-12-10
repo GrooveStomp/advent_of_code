@@ -17,6 +17,65 @@ package main
 
 import "core:fmt"
 import "core:os"
+import "core:sort"
+
+collision :: proc(s1, s2: Segment) -> (Point, bool) {
+    if is_vertical(s1) && is_vertical(s2) {
+        return Point{}, false;
+    }
+
+    if is_horizontal(s1) && is_horizontal(s2) {
+        return Point{}, false;
+    }
+
+    hz: Segment;
+    vt: Segment;
+
+    if is_vertical(s1) {
+        vt = s1;
+        hz = s2;
+    } else {
+        vt = s2;
+        hz = s1;
+    }
+
+    min_x := min(hz.points[0].x, hz.points[1].x);
+    max_x := max(hz.points[0].x, hz.points[1].x);
+    min_y := min(vt.points[0].y, vt.points[1].y);
+    max_y := max(vt.points[0].y, vt.points[1].y);
+
+    if vt.points[0].x < min_x || vt.points[0].x > max_x ||
+        hz.points[0].y < min_y || hz.points[0].y > max_y {
+            return Point{}, false;
+        }
+
+    collision := Point{vt.points[0].x, hz.points[0].y};
+
+    if equal_point(collision, hz.points[0]) ||
+        equal_point(collision, hz.points[1]) ||
+        equal_point(collision, vt.points[0]) ||
+        equal_point(collision, vt.points[1]) {
+            return Point{}, false;
+        }
+
+    return collision, true;
+}
+
+find_collisions :: proc(g1, g2: Grid) -> [dynamic]Point {
+    collisions: [dynamic]Point;
+
+    for s1 in g1.segments {
+        for s2 in g2.segments {
+            collision, happened := collision(s1, s2);
+
+            if happened {
+                append(&collisions, collision);
+            }
+        }
+    }
+
+    return collisions;
+}
 
 read_grids :: proc(f: os.Handle) -> [dynamic]^Grid {
     grids: [dynamic]^Grid;
@@ -31,6 +90,10 @@ read_grids :: proc(f: os.Handle) -> [dynamic]^Grid {
     }
 
     return grids;
+}
+
+sort_collisions :: proc(p1, p2: Point) -> int {
+    return manhattan_distance(p1) - manhattan_distance(p2);
 }
 
 main :: proc() {
@@ -48,6 +111,19 @@ main :: proc() {
 
     grids := read_grids(f);
 
-    fmt.printf("%v\n", grids);
+    for g, i in grids {
+        for s in g.segments {
+            fmt.printf("Grid[%v]: %+v\n", i, s);
+        }
+    }
+
+    collisions := find_collisions(grids[0]^, grids[1]^);
+    sort.quick_sort_proc(collisions[:], sort_collisions);
+    fmt.printf("%+v\n", manhattan_distance(collisions[0]));
+
+    for g in grids {
+        free(g);
+    }
+
     os.exit(0);
 }

@@ -25,7 +25,7 @@ Grid :: struct {
 
 new_grid :: proc(f: os.Handle) -> ^Grid {
     cursor := Point{};
-    grid := Grid{};
+    grid := new(Grid);
 
     str: strings.Builder;
     ch_buf: [1]u8;
@@ -36,24 +36,23 @@ new_grid :: proc(f: os.Handle) -> ^Grid {
         if err != os.ERROR_NONE || n == 0 || ch_buf[0] == '\n' || ch_buf[0] == ',' {
             segment, succeeded := new_segment(cursor, strings.to_string(str));
             if !succeeded {
-                fmt.eprintf("Couldn't create new segment from '%v'\n", strings.to_string(str));
                 break;
             }
 
             cursor = segment.points[1];
             append(&grid.segments, segment^);
+            free(segment);
             strings.reset_builder(&str);
 
             if ch_buf[0] == ',' {
                 continue;
             }
 
-            fmt.eprintf("read err, eof or newline\n");
             break;
         }
 
         strings.write_rune(&str, rune(ch_buf[0]));
     }
 
-    return &grid;
+    return grid;
 }
