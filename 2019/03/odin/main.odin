@@ -4,7 +4,7 @@
 
   File: main.odin
   Created: 2019-12-08
-  Updated: 2019-12-08
+  Updated: 2019-12-10
   Author: Aaron Oman (GrooveStomp)
 
   Notice: CC BY 4.0 License
@@ -110,16 +110,22 @@ main :: proc() {
     defer os.close(f);
 
     grids := read_grids(f);
+    collisions := find_collisions(grids[0]^, grids[1]^);
 
-    for g, i in grids {
-        for s in g.segments {
-            fmt.printf("Grid[%v]: %+v\n", i, s);
+    // NOTE: There is a bug in the LLVM IR right now that prevents compiling the
+    // sort func.
+    my_min := 999;
+    for point in collisions {
+        dist := manhattan_distance(point);
+        if dist < my_min {
+            my_min = dist;
         }
     }
 
-    collisions := find_collisions(grids[0]^, grids[1]^);
-    sort.quick_sort_proc(collisions[:], sort_collisions);
-    fmt.printf("%+v\n", manhattan_distance(collisions[0]));
+    fmt.printf("%v\n", my_min);
+
+    /* sort.quick_sort_proc(collisions[:], sort_collisions); */
+    /* fmt.printf("%+v\n", manhattan_distance(collisions[0])); */
 
     for g in grids {
         free(g);
