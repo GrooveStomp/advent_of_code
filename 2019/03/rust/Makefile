@@ -20,7 +20,7 @@ DEFAULT_GOAL := $(debug)
 .PHONY: clean
 
 debug:
-	$(CC) $(SRC)
+	$(CC) -g $(SRC)
 
 clean:
 	rm -rf $(EXE)
